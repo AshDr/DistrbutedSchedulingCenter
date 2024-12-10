@@ -1,10 +1,10 @@
-# pragma once
+#pragma once
 
-
-class Vehicle{
-public:
+class Vehicle {
+  public:
     void UpdateStatus(int status);
-private:
-    int m_vehicle_id;
-    int m_vehicle_status;
+
+  private:
+    int vehicle_id_;
+    int vehicle_status_;
 };

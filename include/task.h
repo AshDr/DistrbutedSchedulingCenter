@@ -1,9 +1,10 @@
 #pragma once
 
-class Task{
-public:
+class Task {
+  public:
     void UpdateStatus(int status);
-private:
-    int m_task_id;    
-    int m_task_status;
+
+  private:
+    int task_id_;
+    int task_status_;
 };

@@ -1,5 +1,9 @@
 #pragma once
+#include <string>
+class Plugin {
+  public:
+    std::string GetPluginName();
 
-class Plugin{
-
+  private:
+    std::string plugin_name_;
 };
