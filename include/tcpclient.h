@@ -9,7 +9,7 @@ template <typename T> class TCPClient {
     TCPClient(int nServerPort, const char *strServerIP);
     virtual ~TCPClient();
     int Run();
-    virtual void ClientFunction(int nConnectedSocket);
+    virtual void HandleFunction(int client_sock);
 
   private:
     char *server_ip_;

@@ -35,14 +35,12 @@ template <typename T> int TCPClient<T>::Run() {
         return -1;
     }
     T *pT = static_cast<T *>(this);
-    while (true) {
-        pT->ClientFunction(client_sock);
-    }
+    pT->ClientFunction(client_sock);
     ::close(client_sock);
     return 0;
 }
 
-template <typename T> void TCPClient<T>::ClientFunction(int nConnectedSocket) {
+template <typename T> void TCPClient<T>::HandleFunction(int client_sock) {
     std::cout << "TCPClient<T>::ClientFunction: You should implement this "
                  "function in your derived class"
               << std::endl;

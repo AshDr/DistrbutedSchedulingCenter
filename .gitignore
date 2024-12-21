@@ -1,6 +1,6 @@
 *.DS_store
 .vscode
-
+.cache/
 build/
 *.o
 *.out

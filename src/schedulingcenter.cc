@@ -1,4 +1,5 @@
 #include "schedulingcenter.h"
+#include "utils.h"
 #include <iostream>
 
 SchedulingCenter::SchedulingCenter(int server_port, char *bound_ip,
@@ -9,9 +10,18 @@ SchedulingCenter::SchedulingCenter(int server_port, char *bound_ip,
 SchedulingCenter::~SchedulingCenter() {
     GenerateReport();
 }
+void SchedulingCenter::AddTask(int id) {
+    std::lock_guard<std::mutex> lock(task_mutex_);
+    Task task(id, static_cast<int>(TASK_STATUS::TASK_STATUS_PENDING));
+    tasks_.push(task);
+    task_cv_.notify_all();
+}
 
 void SchedulingCenter::AssignTask(int client_sock) {
-    std::lock_guard<std::mutex> lock(task_mutex_);
+    std::unique_lock<std::mutex> lock(task_mutex_);
+
+    task_cv_.wait(lock, [this] { return !tasks_.empty(); });
+
     std::lock_guard<std::mutex> lock_free_clients(free_clients_mutex_);
     free_clients_.push(client_sock);
     while (!tasks_.empty() && !free_clients_.empty()) {
@@ -50,14 +60,14 @@ void SchedulingCenter::HandleFunction(int client_sock) {
             close(client_sock);
             break;
         }
-        uint8_t msg_type = buffer.back(); // 假设第最后一个字节是消息类型
+        int msg_type = buffer.back(); // 假设第最后一个字节是消息类型
         buffer.pop_back();
-        if (msg_type == MSG_STATUS) {
+        if (msg_type == static_cast<int>(MSG_TYPE::MSG_STATUS)) {
             HandleStatus(client_sock, buffer);
-        } else if (msg_type == MSG_TASK) {
+        } else if (msg_type == static_cast<int>(MSG_TYPE::MSG_TASK)) {
             HandleMonitorTask(client_sock, buffer);
         } else {
-            std::cout << "unknown msg type" << std::endl;
+            std::cout << "Server: unknown msg type" << std::endl;
         }
     }
 }

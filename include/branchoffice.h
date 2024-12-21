@@ -1,18 +1,19 @@
 #pragma once
 
 #include "task.h"
+#include "tcpclient.h"
 #include "vehicle.h"
 #include <queue>
 #include <vector>
-
-class BranchOffice {
+const int MAX_BUFFER_SIZE = 1024;
+class BranchOffice : public TCPClient<BranchOffice> {
   public:
-    void AddTask(Task *task);
-    void DispatchTask();
-    void ReportTaskCompletion(Task *task);
-    int Run();
+    void DispatchTask(Task task, int client_sock);
+    void TaskWork(Task task, int client_sock);
+    void HandleFunction(int client_sock) override;
 
   private:
-    std::vector<Vehicle *> vehicles_;
-    std::queue<Task *> tasks_;
+    int branch_id_;
+    int total_vehicles;
+    std::queue<Vehicle> free_vehicles_;
 };
