@@ -1,14 +1,34 @@
 #pragma once
-
-#include "branchoffice.h"
 #include "task.h"
+#include "tcpserver.h"
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <queue>
+#include <unistd.h>
 #include <vector>
-class ScedulingCenter {
-    void AssignTask();
-    void monitorTask();
+const int MAX_BUFFER_SIZE = 1024;
+enum ClientStatus { IDLE, BUSY };
+enum MSG_TYPE {
+    MSG_STATUS = 1, // client status message
+    MSG_TASK,       // client task process message
+};
+class SchedulingCenter : TCPServer<SchedulingCenter> {
+  public:
+    SchedulingCenter(int server_port, char *bound_ip,
+                     int length_of_queue_of_listen);
+    ~SchedulingCenter();
+    void AssignTask(int client_sock);
     void GenerateReport();
+    void HandleFunction(int client_sock) override;
+    void HandleStatus(int client_sock, std::vector<char> &buffer);
+    void HandleMonitorTask(int client_sock, std::vector<char> &buffer);
 
   private:
-    std::vector<Task *> tasks_;
-    std::vector<BranchOffice *> branchOffices_;
+    std::unordered_map<int, std::atomic<ClientStatus>> client_status_map;
+    std::queue<Task> tasks_;
+    std::mutex task_mutex_;
+    std::mutex report_mutex_;
+    std::vector<std::string> reports_;
+    std::mutex free_clients_mutex_;
+    std::queue<int> free_clients_;
 };

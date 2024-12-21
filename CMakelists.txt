@@ -5,6 +5,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(DistrbutedSchedulingCenter)
 
-set(SRC_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(SRC_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 
-include_directories(${SRC_INCLUDE_DIR})
+# include_directories(${SRC_INCLUDE_DIR})
+
+file(GLOB SRC_FILES "${CMAKE_SOURCE_DIR}/src/*.cc")
+add_library(dsc_all
+            OBJECT 
+            ${SRC_FILES}
+            )
+target_include_directories(dsc_all PUBLIC ${SRC_INCLUDE_DIR})
+
+add_executable(dsc
+               ${CMAKE_SOURCE_DIR}/src/main.cc
+               $<TARGET_OBJECTS:dsc_all>
+               )
+target_include_directories(dsc PUBLIC ${SRC_INCLUDE_DIR})
+
+

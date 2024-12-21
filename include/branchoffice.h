@@ -10,6 +10,7 @@ class BranchOffice {
     void AddTask(Task *task);
     void DispatchTask();
     void ReportTaskCompletion(Task *task);
+    int Run();
 
   private:
     std::vector<Vehicle *> vehicles_;
