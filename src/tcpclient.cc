@@ -1,17 +1,16 @@
 #include "tcpclient.h"
 #include <iostream>
 
-template <typename T>
-TCPClient<T>::TCPClient(int nServerPort, const char *strServerIP) {
+TCPClient::TCPClient(int nServerPort, const char *strServerIP) {
   server_port_ = nServerPort;
   int nlength = strlen(strServerIP);
   server_ip_ = new char[nlength + 1];
   strcpy(server_ip_, strServerIP);
 }
 
-template <typename T> TCPClient<T>::~TCPClient() { delete[] server_ip_; }
+TCPClient::~TCPClient() { delete[] server_ip_; }
 
-template <typename T> int TCPClient<T>::Run() {
+int TCPClient::Run() {
   int client_sock = ::socket(AF_INET, SOCK_STREAM, 0);
   if (-1 == client_sock) {
     std::cout << "socket error" << std::endl;
@@ -32,13 +31,12 @@ template <typename T> int TCPClient<T>::Run() {
     ::close(client_sock);
     return -1;
   }
-  T *pT = static_cast<T *>(this);
-  pT->ClientFunction(client_sock);
+  HandleFunction(client_sock);
   ::close(client_sock);
   return 0;
 }
 
-template <typename T> void TCPClient<T>::HandleFunction(int client_sock) {
+void TCPClient::HandleFunction(int client_sock) {
   std::cout << "TCPClient<T>::ClientFunction: You should implement this "
                "function in your derived class"
             << std::endl;

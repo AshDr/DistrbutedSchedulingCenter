@@ -17,4 +17,4 @@ bool Task::Deserialize(std::vector<char> &buf) {
   memcpy(&this->task_status_, buf.data() + sizeof(int), sizeof(int));
   return true;
 }
-int Task::GetType() { return static_cast<int>(CLASS_TYPE::TASK); }
+int Task::GetType() { return static_cast<int>(MSG_TYPE::MSG_TASK); }

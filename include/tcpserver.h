@@ -11,10 +11,8 @@ class TCPServer {
 public:
   TCPServer(int nServerPort, int nLengthOfQueueOfListen = 100,
             const char *strBoundIP = NULL);
-
-  virtual ~TCPServer();
-  int InitConnection(std::string clientIP, std::string clientPort);
   int Run();
+  virtual ~TCPServer();
   virtual void HandleFunction(int client_sock);
 
 private:

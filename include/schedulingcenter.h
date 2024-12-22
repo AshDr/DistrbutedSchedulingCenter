@@ -15,10 +15,10 @@
 const int MAX_BUFFER_SIZE = 1024;
 enum ClientStatus { IDLE, BUSY };
 
-class SchedulingCenter : TCPServer {
+class SchedulingCenter : public TCPServer {
 public:
-  SchedulingCenter(int server_port, int length_of_queue_of_listen,
-                   char *bound_ip);
+  SchedulingCenter(int server_port, int length_of_queue_of_listen=100,
+                   char *bound_ip=NULL);
   ~SchedulingCenter();
   void AssignTask(int client_sock);
   void GenerateReport();

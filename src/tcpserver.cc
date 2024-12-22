@@ -68,6 +68,7 @@ int TCPServer::Run() {
       std::cout << "accept error" << std::endl;
       continue;
     }
+    std::cout << "Client socket " << client_sock << " connected!" << std::endl;
     std::thread client_handle_thread(
         [this, client_sock]() { HandleFunction(client_sock); });
     client_handle_thread.detach();

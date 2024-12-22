@@ -1,6 +1,9 @@
 #include "schedulingcenter.h"
 #include "utils.h"
+#include <cstdint>
 #include <iostream>
+#include <mutex>
+#include <sys/types.h>
 
 SchedulingCenter::SchedulingCenter(int server_port,
                                    int length_of_queue_of_listen,
@@ -9,19 +12,21 @@ SchedulingCenter::SchedulingCenter(int server_port,
 SchedulingCenter::~SchedulingCenter() { GenerateReport(); }
 
 void SchedulingCenter::AddTask(int id) {
-  std::lock_guard<std::mutex> lock(task_mutex_);
+  std::unique_lock<std::mutex> lock(task_mutex_);
   Task task(id, static_cast<int>(TASK_STATUS::TASK_STATUS_PENDING));
+  std::cout << "Addtask " << id << std::endl;
   tasks_.push(task);
   task_cv_.notify_all();
 }
 
 void SchedulingCenter::AssignTask(int client_sock) {
+  std:: cout << "AssignTask start1" << std::endl;
   std::unique_lock<std::mutex> lock(task_mutex_);
-
+  std::unique_lock<std::mutex> lock_free_clients(free_clients_mutex_);
   task_cv_.wait(lock, [this] { return !tasks_.empty(); });
-
-  std::lock_guard<std::mutex> lock_free_clients(free_clients_mutex_);
+  std:: cout << "AssignTask start2" << std::endl;
   free_clients_.push(client_sock);
+
   while (!tasks_.empty() && !free_clients_.empty()) {
     Task task = tasks_.front();
     tasks_.pop();
@@ -29,6 +34,7 @@ void SchedulingCenter::AssignTask(int client_sock) {
     free_clients_.pop();
     std::vector<char> buf;
     task.Serialize(buf);
+    buf.push_back(static_cast<char>(MSG_TYPE::MSG_TASK));
     send(free_client_sock, buf.data(), buf.size(), 0);
   }
 }
@@ -58,6 +64,7 @@ void SchedulingCenter::HandleFunction(int client_sock) {
       close(client_sock);
       break;
     }
+    buffer.resize(bytes_received);
     int msg_type = buffer.back(); // 假设第最后一个字节是消息类型
     buffer.pop_back();
     if (msg_type == static_cast<int>(MSG_TYPE::MSG_STATUS)) {
@@ -66,6 +73,10 @@ void SchedulingCenter::HandleFunction(int client_sock) {
       HandleMonitorTask(client_sock, buffer);
     } else {
       std::cout << "Server: unknown msg type" << std::endl;
+      for(auto x: buffer) {
+        std::cout << (int)x;
+      }
+      std::cout << std::endl;
     }
   }
 }
@@ -76,6 +87,7 @@ void SchedulingCenter::HandleStatus(int client_sock,
   if (status == "BUSY") {
     client_status_map[client_sock] = BUSY;
   } else if (status == "IDLE") {
+    // std::cout << "Receive IDLE" << std::endl;
     client_status_map[client_sock] = IDLE;
     AssignTask(client_sock); // 其实也可以改成每隔一段时间就调一次
   } else {
