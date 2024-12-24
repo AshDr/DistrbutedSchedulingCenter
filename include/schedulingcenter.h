@@ -23,8 +23,8 @@ public:
   void AssignTask(int client_sock);
   void GenerateReport();
   void HandleFunction(int client_sock) override;
-  void HandleStatus(int client_sock, std::vector<char> &buffer);
-  void HandleMonitorTask(int client_sock, std::vector<char> &buffer);
+  void HandleStatus(int client_sock, std::vector<uint8_t> &buffer);
+  void HandleMonitorTask(int client_sock, std::vector<uint8_t> &buffer);
   void AddTask(int id);
 
 private:

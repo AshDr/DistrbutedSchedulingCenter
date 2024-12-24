@@ -32,7 +32,7 @@ void SchedulingCenter::AssignTask(int client_sock) {
     tasks_.pop();
     int free_client_sock = free_clients_.front();
     free_clients_.pop();
-    std::vector<char> buf;
+    std::vector<uint8_t> buf;
     task.Serialize(buf);
     buf.push_back(static_cast<char>(MSG_TYPE::MSG_TASK));
     send(free_client_sock, buf.data(), buf.size(), 0);
@@ -54,7 +54,7 @@ void SchedulingCenter::GenerateReport() {
 }
 
 void SchedulingCenter::HandleFunction(int client_sock) {
-  std::vector<char> buffer(MAX_BUFFER_SIZE);
+  std::vector<uint8_t> buffer(MAX_BUFFER_SIZE);
   while (true) {
     int bytes_received =
         recv(client_sock, buffer.data(), MAX_BUFFER_SIZE, 0); // 阻塞
@@ -65,24 +65,28 @@ void SchedulingCenter::HandleFunction(int client_sock) {
       break;
     }
     buffer.resize(bytes_received);
-    int msg_type = buffer.back(); // 假设第最后一个字节是消息类型
+    for(auto x: buffer) {
+      std::cout << (int)x;
+    }
+    std::cout << std::endl;
+    std::cout << "buffer size = " << bytes_received << std::endl;
+    uint8_t msg_type = buffer.back(); // 假设第最后一个字节是消息类型
+    std::cout << "msg type " << static_cast<int>(msg_type) << " end"<<std::endl; // always 0
     buffer.pop_back();
-    if (msg_type == static_cast<int>(MSG_TYPE::MSG_STATUS)) {
+    if (msg_type == static_cast<uint8_t>(MSG_TYPE::MSG_STATUS)) {
       HandleStatus(client_sock, buffer);
-    } else if (msg_type == static_cast<int>(MSG_TYPE::MSG_TASK)) {
+    } else if (msg_type == static_cast<uint8_t>(MSG_TYPE::MSG_TASK)) {
       HandleMonitorTask(client_sock, buffer);
     } else {
       std::cout << "Server: unknown msg type" << std::endl;
-      for(auto x: buffer) {
-        std::cout << (int)x;
-      }
-      std::cout << std::endl;
+      
     }
+
   }
 }
 
 void SchedulingCenter::HandleStatus(int client_sock,
-                                    std::vector<char> &buffer) {
+                                    std::vector<uint8_t> &buffer) {
   std::string status(buffer.begin(), buffer.end());
   if (status == "BUSY") {
     client_status_map[client_sock] = BUSY;
@@ -96,7 +100,7 @@ void SchedulingCenter::HandleStatus(int client_sock,
 }
 
 void SchedulingCenter::HandleMonitorTask(int client_sock,
-                                         std::vector<char> &buffer) {
+                                         std::vector<uint8_t> &buffer) {
   std::string task_current_process_report(buffer.begin(), buffer.end());
   std::lock_guard<std::mutex> lock(report_mutex_);
   reports_.push_back(task_current_process_report);

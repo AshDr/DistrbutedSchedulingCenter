@@ -11,8 +11,8 @@ class Task : public Serializable {
     int GetTaskID() {
         return task_id_;
     }
-    bool Serialize(std::vector<char> &buf) override;
-    bool Deserialize(std::vector<char> &buf) override;
+    bool Serialize(std::vector<uint8_t> &buf) override;
+    bool Deserialize(std::vector<uint8_t> &buf) override;
     int GetType() override;
 
   private:
