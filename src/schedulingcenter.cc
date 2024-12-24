@@ -20,11 +20,11 @@ void SchedulingCenter::AddTask(int id) {
 }
 
 void SchedulingCenter::AssignTask(int client_sock) {
-  std:: cout << "AssignTask start1" << std::endl;
+  std::cout << "AssignTask start1" << std::endl;
   std::unique_lock<std::mutex> lock(task_mutex_);
   std::unique_lock<std::mutex> lock_free_clients(free_clients_mutex_);
   task_cv_.wait(lock, [this] { return !tasks_.empty(); });
-  std:: cout << "AssignTask start2" << std::endl;
+  std::cout << "AssignTask start2" << std::endl;
   free_clients_.push(client_sock);
 
   while (!tasks_.empty() && !free_clients_.empty()) {
@@ -54,8 +54,8 @@ void SchedulingCenter::GenerateReport() {
 }
 
 void SchedulingCenter::HandleFunction(int client_sock) {
-  std::vector<uint8_t> buffer(MAX_BUFFER_SIZE);
   while (true) {
+    std::vector<uint8_t> buffer(MAX_BUFFER_SIZE);
     int bytes_received =
         recv(client_sock, buffer.data(), MAX_BUFFER_SIZE, 0); // 阻塞
     if (bytes_received <= 0) {
@@ -64,14 +64,16 @@ void SchedulingCenter::HandleFunction(int client_sock) {
       close(client_sock);
       break;
     }
+
     buffer.resize(bytes_received);
-    for(auto x: buffer) {
-      std::cout << (int)x;
+    uint8_t msg_type = buffer.back(); // 假设第最后一个字节是消息类型
+    for (auto x : buffer) {
+      std::cout << (unsigned int)x << " ";
     }
     std::cout << std::endl;
-    std::cout << "buffer size = " << bytes_received << std::endl;
-    uint8_t msg_type = buffer.back(); // 假设第最后一个字节是消息类型
-    std::cout << "msg type " << static_cast<int>(msg_type) << " end"<<std::endl; // always 0
+    std::cout << "buffer size: " << buffer.size() << std::endl;
+    std::cout << "msg type " << static_cast<unsigned int>(msg_type) << " end"
+              << std::endl; // always 0
     buffer.pop_back();
     if (msg_type == static_cast<uint8_t>(MSG_TYPE::MSG_STATUS)) {
       HandleStatus(client_sock, buffer);
@@ -79,9 +81,7 @@ void SchedulingCenter::HandleFunction(int client_sock) {
       HandleMonitorTask(client_sock, buffer);
     } else {
       std::cout << "Server: unknown msg type" << std::endl;
-      
     }
-
   }
 }
 
