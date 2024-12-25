@@ -13,7 +13,7 @@ SchedulingCenter::~SchedulingCenter() { GenerateReport(); }
 
 void SchedulingCenter::AddTask(int id) {
   std::unique_lock<std::mutex> lock(task_mutex_);
-  Task task(id, static_cast<int>(TASK_STATUS::TASK_STATUS_PENDING));
+  Task task(id, static_cast<int>(MSG_TYPE::TASK_STATUS_PENDING));
   std::cout << "Addtask " << id << std::endl;
   tasks_.push(task);
   task_cv_.notify_all();
@@ -66,19 +66,30 @@ void SchedulingCenter::HandleFunction(int client_sock) {
     }
 
     buffer.resize(bytes_received);
-    uint8_t msg_type = buffer.back(); // 假设第最后一个字节是消息类型
-    for (auto x : buffer) {
-      std::cout << (unsigned int)x << " ";
-    }
-    std::cout << std::endl;
+    uint8_t msg_type = buffer.back(); // 最后一个字节是消息类型
+    // for (auto x : buffer) {
+    //   std::cout << (unsigned int)x << " ";
+    // }
+    // std::cout << std::endl;
     std::cout << "buffer size: " << buffer.size() << std::endl;
     std::cout << "msg type " << static_cast<unsigned int>(msg_type) << " end"
               << std::endl; // always 0
     buffer.pop_back();
-    if (msg_type == static_cast<uint8_t>(MSG_TYPE::MSG_STATUS)) {
+    if (msg_type == static_cast<uint8_t>(MSG_TYPE::MSG_BRANCH_STATUS)) {
       HandleStatus(client_sock, buffer);
-    } else if (msg_type == static_cast<uint8_t>(MSG_TYPE::MSG_TASK)) {
+    } else if (msg_type ==
+               static_cast<uint8_t>(MSG_TYPE::TASK_STATUS_IN_PROGRESS)) {
       HandleMonitorTask(client_sock, buffer);
+    } else if (msg_type ==
+               static_cast<uint8_t>(MSG_TYPE::TASK_STATUS_COMPLETED)) {
+      HandleMonitorTask(client_sock, buffer);
+      AssignTask(client_sock);
+    } else if (msg_type == static_cast<uint8_t>(MSG_TYPE::TASK_STATUS_FAILE)) {
+      std::cout << "Server: receive task failed msg" << std::endl;
+      std::lock_guard<std::mutex> lock(free_clients_mutex_);
+      free_clients_.push(client_sock);
+    } else if (msg_type == static_cast<uint8_t>(MSG_TYPE::MSG_PLUGIN)) {
+      std::cout << "Server: receive plugin msg" << std::endl;
     } else {
       std::cout << "Server: unknown msg type" << std::endl;
     }
@@ -91,17 +102,17 @@ void SchedulingCenter::HandleStatus(int client_sock,
   if (status == "BUSY") {
     client_status_map[client_sock] = BUSY;
   } else if (status == "IDLE") {
-    // std::cout << "Receive IDLE" << std::endl;
     client_status_map[client_sock] = IDLE;
     AssignTask(client_sock); // 其实也可以改成每隔一段时间就调一次
   } else {
-    std::cout << "unknown status" << std::endl;
+    std::cout << "unknown status " << status << std::endl;
   }
 }
 
 void SchedulingCenter::HandleMonitorTask(int client_sock,
                                          std::vector<uint8_t> &buffer) {
   std::string task_current_process_report(buffer.begin(), buffer.end());
+  std::cout << task_current_process_report << std::endl;
   std::lock_guard<std::mutex> lock(report_mutex_);
   reports_.push_back(task_current_process_report);
 }

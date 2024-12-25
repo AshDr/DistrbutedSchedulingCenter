@@ -1,7 +1,7 @@
 #include "task.h"
 #include "utils.h"
-#include <cstring>
 #include <cstdint>
+#include <cstring>
 
 void Task::UpdateStatus(int status) { task_status_ = status; }
 bool Task::Serialize(std::vector<uint8_t> &buf) {
