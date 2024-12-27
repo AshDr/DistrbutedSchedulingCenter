@@ -1,5 +1,6 @@
 #include "plugin.h"
-std::string Plugin::GetPluginName() { return plugin_name_; }
-void Plugin::work() {
-  std::cout << "Plugin " << plugin_name_ << " is working" << std::endl;
+Plugin::Plugin(std::string plugin_name, PluginFunction func) {
+  plugin_name_ = plugin_name;
+  plugin_func_ = func;
 }
+std::string Plugin::GetPluginName() { return plugin_name_; }

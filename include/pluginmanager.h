@@ -2,11 +2,11 @@
 
 #include "plugin.h"
 #include <vector>
+#include <string>
 class PluginManager {
   public:
-    void LoadPlugin(Plugin *plugin);
-    void UpdatePlugin(std::string plugin_name);
-
+    bool LoadPlugin(std::string plugin_path, Plugin& my_plugin);
+    bool GetPluginList(std::vector<std::string>& plugin_names);
   private:
-    std::vector<Plugin *> plugins_;
+    std::vector<std::string> PluginNames;
 };

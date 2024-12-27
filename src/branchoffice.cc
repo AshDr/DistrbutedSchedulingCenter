@@ -17,6 +17,10 @@ BranchOffice::BranchOffice(int server_port, char *server_ip, int vehicle_cnt,
   }
 }
 
+void BranchOffice::SetPlugin(Plugin plugin) {
+  branch_plugin_ = plugin;
+}
+
 template <typename T>
 void BranchOffice::SendMessage(int client_sock, std::string message,
                                T msg_type) {
@@ -32,6 +36,11 @@ void BranchOffice::DispatchTask(Task task, int client_sock) {
     assert(0);
   } else {
     std::cout << "In DispatchTask" << std::endl;
+
+    if(branch_plugin_.GetPluginName() != "NULL") {
+      branch_plugin_.Plugin_Work(); // plugin work 
+    }
+
     std::lock_guard<std::mutex> lock(free_vehicles_mutex_);
     Vehicle vehicle = free_vehicles_.front();
     free_vehicles_.pop();
@@ -78,7 +87,7 @@ void BranchOffice::HandleFunction(int client_sock) {
     int bytes_received = recv(client_sock, buffer.data(), MAX_BUFFER_SIZE, 0);
     buffer.resize(bytes_received);
     std::cout << "Client received" << std::endl;
-    int msg_type = buffer.back(); // 假设第最后一个字节是消息类型
+    int msg_type = buffer.back(); // 最后一个字节是消息类型
     buffer.pop_back();
     if (msg_type == static_cast<int>(MSG_TYPE::MSG_TASK)) {
       Task task;

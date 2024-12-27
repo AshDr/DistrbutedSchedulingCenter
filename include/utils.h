@@ -11,3 +11,5 @@ enum class MSG_TYPE : uint8_t {
   TASK_STATUS_COMPLETED,
   TASK_STATUS_FAILE
 };
+
+typedef void (*PluginFunction)(); // 函数类型定义

@@ -26,7 +26,9 @@ public:
   void HandleStatus(int client_sock, std::vector<uint8_t> &buffer);
   void HandleMonitorTask(int client_sock, std::vector<uint8_t> &buffer);
   void AddTask(int id);
-
+  void UpdatePlugin(std::string plugin_name, std::string plugin_dir);
+  template <typename T>
+  void SendMessage(int client_sock, std::string message, T msg_type);
 private:
   std::unordered_map<int, std::atomic<ClientStatus>> client_status_map;
   std::queue<Task> tasks_;

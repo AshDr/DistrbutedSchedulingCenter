@@ -19,6 +19,15 @@ void SchedulingCenter::AddTask(int id) {
   task_cv_.notify_all();
 }
 
+template <typename T>
+void SchedulingCenter::SendMessage(int client_sock, std::string message,
+                               T msg_type) {
+  std::vector<uint8_t> buf;
+  buf.insert(buf.end(), message.begin(), message.end());
+  buf.push_back((uint8_t)msg_type);
+  send(client_sock, buf.data(), buf.size(), 0);
+}
+
 void SchedulingCenter::AssignTask(int client_sock) {
   std::cout << "AssignTask start1" << std::endl;
   std::unique_lock<std::mutex> lock(task_mutex_);
@@ -37,6 +46,13 @@ void SchedulingCenter::AssignTask(int client_sock) {
     buf.push_back(static_cast<char>(MSG_TYPE::MSG_TASK));
     send(free_client_sock, buf.data(), buf.size(), 0);
   }
+}
+
+void SchedulingCenter::UpdatePlugin(std::string plugin_name, std::string plugin_dir) {
+  std::string plugin_path = plugin_dir + plugin_name;
+  for(const auto &[client_sock, status]: client_status_map) {
+    
+  };
 }
 
 void SchedulingCenter::GenerateReport() {
@@ -71,7 +87,7 @@ void SchedulingCenter::HandleFunction(int client_sock) {
     //   std::cout << (unsigned int)x << " ";
     // }
     // std::cout << std::endl;
-    std::cout << "buffer size: " << buffer.size() << std::endl;
+    // std::cout << "buffer size: " << buffer.size() << std::endl;
     std::cout << "msg type " << static_cast<unsigned int>(msg_type) << " end"
               << std::endl; // always 0
     buffer.pop_back();
@@ -103,7 +119,7 @@ void SchedulingCenter::HandleStatus(int client_sock,
     client_status_map[client_sock] = BUSY;
   } else if (status == "IDLE") {
     client_status_map[client_sock] = IDLE;
-    AssignTask(client_sock); // 其实也可以改成每隔一段时间就调一次
+    AssignTask(client_sock); // 有空闲branch时分配任务
   } else {
     std::cout << "unknown status " << status << std::endl;
   }
