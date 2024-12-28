@@ -1,4 +1,5 @@
 #pragma once
+#include "pluginmanager.h"
 #include "task.h"
 #include "tcpserver.h"
 #include <arpa/inet.h>

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include "plugin.h"
+#include "pluginmanager.h"
 const int MAX_BUFFER_SIZE = 1024;
 class BranchOffice : public TCPClient {
 public:
@@ -19,10 +20,12 @@ public:
   template <typename T>
   void SendMessage(int client_sock, std::string message, T msg_type);
   void SetPlugin(Plugin plugin);
+  bool LoadPlugin(std::string plugin_path);
 private:
   int branch_id_;
   int total_vehicles;
   std::mutex free_vehicles_mutex_;
   std::queue<Vehicle> free_vehicles_;
   Plugin branch_plugin_;
+  PluginManager plugin_manager_;
 };

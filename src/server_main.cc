@@ -10,6 +10,9 @@ int main() {
     while (1) {
         schedulingcenter.AddTask(++cnt);
         sleep(3);
+        if(cnt == 3) {
+            schedulingcenter.UpdatePlugin("libfuncv2.so", "../plugins/");
+        }
     }
     return 0;
 }

@@ -51,7 +51,7 @@ void SchedulingCenter::AssignTask(int client_sock) {
 void SchedulingCenter::UpdatePlugin(std::string plugin_name, std::string plugin_dir) {
   std::string plugin_path = plugin_dir + plugin_name;
   for(const auto &[client_sock, status]: client_status_map) {
-    
+    SendMessage(client_sock, plugin_path, MSG_TYPE::MSG_PLUGIN);
   };
 }
 

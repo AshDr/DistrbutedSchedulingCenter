@@ -1,4 +1,5 @@
 #include "branchoffice.h"
+#include "pluginmanager.h"
 #include "utils.h"
 #include <cassert>
 #include <cstdint>
@@ -11,6 +12,7 @@ BranchOffice::BranchOffice(int server_port, char *server_ip, int vehicle_cnt,
                            int branch_id)
     : TCPClient(server_port, server_ip), total_vehicles(vehicle_cnt),
       branch_id_(branch_id) {
+  plugin_manager_ = PluginManager();
   // std::lock_guard<std::mutex> lock()
   for (int i = 1; i <= vehicle_cnt; i++) {
     free_vehicles_.emplace(i, 0);
@@ -19,6 +21,10 @@ BranchOffice::BranchOffice(int server_port, char *server_ip, int vehicle_cnt,
 
 void BranchOffice::SetPlugin(Plugin plugin) {
   branch_plugin_ = plugin;
+}
+
+bool BranchOffice::LoadPlugin(std::string plugin_path) {
+  return plugin_manager_.LoadPlugin(plugin_path, branch_plugin_);
 }
 
 template <typename T>
@@ -94,7 +100,10 @@ void BranchOffice::HandleFunction(int client_sock) {
       task.Deserialize(buffer);
       DispatchTask(task, client_sock);
     } else if (msg_type == static_cast<int>(MSG_TYPE::MSG_PLUGIN)) {
+      std::string plugin_path = std::string(buffer.begin(), buffer.end());
+      // std::cout << std::string(buffer.begin(), buffer.end()) << std::endl;
       // 处理插件
+      LoadPlugin(plugin_path);
     } else {
       std::cout << "Client: unknown msg type "
                 << std::string(buffer.begin(), buffer.end()) << std::endl;
